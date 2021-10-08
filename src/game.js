@@ -1,25 +1,25 @@
 export default function createGame() {
   const state = {
-      players: {},
-      fruits: {},
-      screen: {
-        width: 10,
-        height: 10
-      }
-      // board: [
-      //     // x, y
-      //     {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
-      //     {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
-      //     {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
-      //     {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
-      //     {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
-      //     {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
-      //     {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
-      //     {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
-      //     {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
-      //     {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
-      // ]
-  }
+    players: {},
+    fruits: {},
+    screen: {
+      width: 50,
+      height: 50,
+    },
+    // board: [
+    //     // x, y
+    //     {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+    //     {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+    //     {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+    //     {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+    //     {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+    //     {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+    //     {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+    //     {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+    //     {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+    //     {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+    // ]
+  };
 
   /**
    * # Abstração adiantada. Possíveis efeitos negativos no sistema.
@@ -53,33 +53,33 @@ export default function createGame() {
   **/
 
   function addPlayer(command) {
-      const playerId = command.playerId
-      const playerX = command.playerX
-      const playerY = command.playerY
+    const playerId = command.playerId;
+    const playerX = Math.floor(Math.random() * state.screen.width + 1);
+    const playerY = Math.floor(Math.random() * state.screen.height + 1);
 
-      state.players[playerId] = {
-          x: playerX,
-          y: playerY
-      }
+    state.players[playerId] = {
+      x: playerX,
+      y: playerY,
+    };
   }
 
   function removePlayer(command) {
-      const playerId = command.playerId
+    const playerId = command.playerId;
 
-      delete state.players[playerId]
+    delete state.players[playerId];
   }
 
   function addFruit(command) {
-      state.fruits[command.fruitId] = {
-          x: command.fruitX,
-          y: command.fruitY,
-      };
+    state.fruits[command.fruitId] = {
+      x: command.fruitX,
+      y: command.fruitY,
+    };
   }
 
   function removeFruit(command) {
-     const fruitId = command.fruitId;
+    const fruitId = command.fruitId;
 
-     delete state.fruits[fruitId];
+    delete state.fruits[fruitId];
   }
 
   /**
@@ -89,69 +89,60 @@ export default function createGame() {
    * Ver arquivo exemplos/command.ts
    */
 
-   // strategy pattern + factory pattern
+  // strategy pattern + factory pattern
 
   function movePlayer(command) {
-      console.log(`Move ${command.playerId} with ${command.keyPressed}`)
+    const keyPressed = command.keyPressed;
+    const player = state.players[command.playerId];
 
-      const keyPressed = command.keyPressed
-      const player = state.players[command.playerId]
+    const acceptedMoves = {
+      ArrowUp(player) {
+        if (player.y - 1 >= 0) {
+          player.y = player.y - 1;
+        }
+      },
+      ArrowDown(player) {
+        if (player.y + 1 < state.screen.height) {
+          player.y = player.y + 1;
+        }
+      },
+      ArrowRight(player) {
+        if (player.x + 1 < state.screen.width) {
+          player.x = player.x + 1;
+        }
+      },
+      ArrowLeft(player) {
+        if (player.x - 1 >= 0) {
+          player.x = player.x - 1;
+        }
+      },
+    };
 
-      const acceptedMoves = {
-          ArrowUp(player) {
-              console.log('Moving player Up')
-              if (player.y - 1 >= 0) {
-                  player.y = player.y - 1
-              }
-          },
-          ArrowDown(player) {
-              console.log('Moving player Down')
-              if (player.y + 1 < state.screen.height) {
-                  player.y = player.y + 1
-              }
-          },
-          ArrowRight(player) {
-              console.log('Moving player Right')
-              if (player.x + 1 < state.screen.width) {
-                  player.x = player.x + 1
-              }
-          },
-          ArrowLeft(player) {
-              console.log('Moving player Left')
-              if (player.x - 1 >= 0) {
-                  player.x = player.x - 1
-              }
-          }
-      }
+    const moveFunction = acceptedMoves[keyPressed];
 
-      const moveFunction = acceptedMoves[keyPressed];
-
-      if(player && moveFunction){
-          moveFunction(player)
-          checkForFruitCollision(command.playerId)
-      }
+    if (player && moveFunction) {
+      moveFunction(player);
+      checkForFruitCollision(command.playerId);
+    }
   }
 
   function checkForFruitCollision(playerId) {
-      const player = state.players[playerId];
+    const player = state.players[playerId];
 
-      for (const fruitId in state.fruits) {
-          console.log(`Checking ${playerId} and ${fruitId}`);
-
-          const fruit = state.fruits[fruitId]
-          if (player.x === fruit.x && player.y === fruit.y) {
-              console.log(`Collision between ${fruitId} and player ${playerId}`)
-              removeFruit({ fruitId });
-          }
+    for (const fruitId in state.fruits) {
+      const fruit = state.fruits[fruitId];
+      if (player.x === fruit.x && player.y === fruit.y) {
+        removeFruit({ fruitId });
       }
+    }
   }
 
   return {
-      state,
-      movePlayer,
-      addPlayer,
-      removePlayer,
-      addFruit,
-      removeFruit
-  }
+    state,
+    movePlayer,
+    addPlayer,
+    removePlayer,
+    addFruit,
+    removeFruit,
+  };
 }

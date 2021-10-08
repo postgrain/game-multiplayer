@@ -1,0 +1,48 @@
+<html>
+  <head>
+    <title>Game Multiplayer</title>
+    <style>
+      #screen {
+        border: 10px solid #ccc;
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+        image-rendering: -moz-crisp-edges;
+        width: 400px;
+        height: 400px;
+      }
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+  </head>
+  <body>
+    <canvas id="screen" width="" height=""></canvas>
+  </body>
+  <script type="module">
+    import createKeyboardListener from "../keyboard-listener.js";
+    import renderScreen from "../render-screen.js";
+    let gameInstance = null;
+
+    const socket = io();
+    socket.on("connect", () => {
+      console.log("> Conexão aberta com o server: ", socket.id);
+    });
+
+    socket.on("setup", (game) => {
+      gameInstance = game;
+      console.log("game setup", { game });
+      const canvas = document.getElementById("screen");
+      canvas.setAttribute("width", game.state.screen.width);
+      canvas.setAttribute("height", game.state.screen.height);
+      renderScreen(canvas, game, requestAnimationFrame);
+
+      const keyboardListener = createKeyboardListener(document, socket.id);
+      keyboardListener.subscribe((command) => {
+        console.log("> player moved", { command });
+        socket.emit("playerMoved", command);
+      });
+
+      socket.on("stateChanged", (state) => {
+        gameInstance.state = state;
+      });
+    });
+  </script>
+</html>

@@ -1,0 +1,14 @@
+{
+    "type": "module",
+    "main": "server.js",
+    "scripts": {
+        "start": "nodemon --experimental-modules --es-module-specifier-resolution=node server.js"
+    },
+    "dependencies": {
+        "express": "^4.17.1",
+        "socket.io": "^4.2.0"
+    },
+    "devDependencies": {
+        "nodemon": "^2.0.13"
+    }
+}
