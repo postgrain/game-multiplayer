@@ -17,22 +17,28 @@
     <canvas id="screen" width="" height=""></canvas>
   </body>
   <script type="module">
-    import createKeyboardListener from "../keyboard-listener.js";
-    import renderScreen from "../render-screen.js";
-    let gameInstance = null;
+    // melhorar código -> refactoring
+    // adicionar mais testes automatizados
 
+    import createKeyboardListener from "../keyboard-listener.js";
+    import configureScreen from "../render-screen.js";
+    import createGameClient from "../game-client.js";
+
+    const gameClient = createGameClient();
     const socket = io();
     socket.on("connect", () => {
       console.log("> Conexão aberta com o server: ", socket.id);
     });
 
     socket.on("setup", (game) => {
-      gameInstance = game;
-      console.log("game setup", { game });
+      gameClient.setup({
+        screen: game.state.screen,
+        players: game.state.players,
+        fruits: game.state.fruits,
+      });
+
       const canvas = document.getElementById("screen");
-      canvas.setAttribute("width", game.state.screen.width);
-      canvas.setAttribute("height", game.state.screen.height);
-      renderScreen(canvas, game, requestAnimationFrame);
+      configureScreen(canvas, gameClient)(requestAnimationFrame);
 
       const keyboardListener = createKeyboardListener(document, socket.id);
       keyboardListener.subscribe((command) => {
@@ -41,7 +47,11 @@
       });
 
       socket.on("stateChanged", (state) => {
-        gameInstance.state = state;
+        gameClient.setup({
+          screen: state.screen,
+          players: state.players,
+          fruits: state.fruits,
+        });
       });
     });
   </script>

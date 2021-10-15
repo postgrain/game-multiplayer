@@ -24,7 +24,7 @@ sockets.on("connection", (socket) => {
 
   socket.on("playerMoved", (command) => {
     game.movePlayer(command);
-    socket.emit("stateChanged", game.state);
+    sockets.emit("stateChanged", game.state);
   });
 
   socket.on("disconnect", () => {
