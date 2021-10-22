@@ -15,6 +15,10 @@
   </head>
   <body>
     <canvas id="screen" width="" height=""></canvas>
+    <button class="movement-btn" data-movement="Up">Up</button>
+    <button class="movement-btn" data-movement="Down">Down</button>
+    <button class="movement-btn" data-movement="Right">Right</button>
+    <button class="movement-btn" data-movement="Left">Left</button>
   </body>
   <script type="module">
     // melhorar código -> refactoring
@@ -30,6 +34,21 @@
       console.log("> Conexão aberta com o server: ", socket.id);
     });
 
+    const buttonMovementMap = {
+      Up: "MoveUp",
+      Down: "MoveDown",
+      Right: "MoveRight",
+      Left: "MoveLeft",
+    };
+
+    const playerMoved = (movement) => {
+      console.log("> player moved", { movement });
+      socket.emit("playerMoved", {
+        playerId: socket.id,
+        movement,
+      });
+    };
+
     socket.on("setup", (game) => {
       gameClient.setup({
         screen: game.state.screen,
@@ -40,10 +59,38 @@
       const canvas = document.getElementById("screen");
       configureScreen(canvas, gameClient)(requestAnimationFrame);
 
-      const keyboardListener = createKeyboardListener(document, socket.id);
-      keyboardListener.subscribe((command) => {
-        console.log("> player moved", { command });
-        socket.emit("playerMoved", command);
+      const movementButtons = document.querySelectorAll(".movement-btn");
+      movementButtons.forEach((button) =>
+        button.addEventListener("click", (event) => {
+          playerMoved(buttonMovementMap[event.target.dataset.movement]);
+        })
+      );
+
+      // SOLID
+      // open closed principle
+
+      const keyboardListener = createKeyboardListener(document);
+
+      const keyboardMovementsMap = {
+        38: "MoveUp",
+        87: "MoveUp",
+
+        40: "MoveDown",
+        83: "MoveDown",
+
+        37: "MoveLeft",
+        65: "MoveLeft",
+
+        39: "MoveRight",
+        68: "MoveRight",
+      };
+
+      keyboardListener.subscribe((keyEvent) => {
+        const movement = keyboardMovementsMap[keyEvent.keyCode];
+
+        if (movement) {
+          playerMoved(movement);
+        }
       });
 
       socket.on("stateChanged", (state) => {

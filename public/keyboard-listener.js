@@ -1,4 +1,4 @@
-export default function createKeyboardListener(document, playerId) {
+export default function createKeyboardListener(document) {
   document.addEventListener("keydown", handleKeydown);
 
   const state = {
@@ -16,12 +16,7 @@ export default function createKeyboardListener(document, playerId) {
   }
 
   function handleKeydown(event) {
-    const command = {
-      playerId,
-      keyPressed: event.key,
-    };
-
-    notifyAll(command);
+    notifyAll(event);
   }
 
   return {
