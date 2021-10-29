@@ -5,8 +5,26 @@ import {
   MoveLeftAction,
 } from "./player-movements";
 
+export interface Coordinates {
+  x: number;
+  y: number;
+}
+
+export interface Player extends Coordinates {}
+
+export interface Fruit extends Coordinates {}
+
+export interface GameState {
+  players: { [key: string]: Player };
+  fruits: { [key: string]: Fruit };
+  screen: {
+    width: number;
+    height: number;
+  };
+}
+
 export default function createGame() {
-  const state = {
+  const state: GameState = {
     players: {},
     fruits: {},
     screen: {
@@ -59,7 +77,7 @@ export default function createGame() {
   }
   **/
 
-  function addPlayer(command) {
+  function addPlayer(command: any) {
     const playerId = command.playerId;
     const playerX = Math.floor(Math.random() * state.screen.width + 1);
     const playerY = Math.floor(Math.random() * state.screen.height + 1);
@@ -70,20 +88,20 @@ export default function createGame() {
     };
   }
 
-  function removePlayer(command) {
+  function removePlayer(command: any) {
     const playerId = command.playerId;
 
     delete state.players[playerId];
   }
 
-  function addFruit(command) {
+  function addFruit(command: any) {
     state.fruits[command.fruitId] = {
       x: command.fruitX,
       y: command.fruitY,
     };
   }
 
-  function removeFruit(command) {
+  function removeFruit(command: any) {
     const fruitId = command.fruitId;
 
     delete state.fruits[fruitId];
@@ -98,11 +116,11 @@ export default function createGame() {
 
   // strategy pattern + factory pattern
 
-  function movePlayer(command) {
+  function movePlayer(command: any) {
     // const keyPressed = command.movement; // https://refactoring.guru/pt-br/inline-temp
     const player = state.players[command.playerId];
 
-    const MovementMap = {
+    const MovementMap: { [key: string]: any } = {
       MoveUp: MoveUpAction,
       MoveDown: MoveDownAction,
       MoveRight: MoveRightAction,
@@ -119,7 +137,7 @@ export default function createGame() {
     }
   }
 
-  function checkForFruitCollision(playerId) {
+  function checkForFruitCollision(playerId: any) {
     const player = state.players[playerId];
 
     for (const fruitId in state.fruits) {

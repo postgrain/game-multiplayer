@@ -1,8 +1,5 @@
 export class MovementAction {
-  constructor(state, player) {
-    this.state = state;
-    this.player = player;
-  }
+  constructor(protected state: any, protected player: any) {}
 }
 
 export class MoveUpAction extends MovementAction {
@@ -36,10 +33,3 @@ export class MoveLeftAction extends MovementAction {
     }
   }
 }
-
-export default {
-  MoveUpAction,
-  MoveDownAction,
-  MoveLeftAction,
-  MoveRightAction,
-};

@@ -1,10 +1,10 @@
-export default function configureScreen(canvas, game) {
+export default function configureScreen(canvas: any, game: any) {
   const context = canvas.getContext("2d");
   const { width, height } = game.screen();
   canvas.setAttribute("width", width);
   canvas.setAttribute("height", height);
 
-  return function renderScreen(requestAnimationFrame) {
+  return function renderScreen(requestAnimationFrame: any) {
     context.fillStyle = "white";
     context.clearRect(0, 0, width, height);
 

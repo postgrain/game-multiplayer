@@ -12,6 +12,7 @@
 - ✅ Permitir utilizar teclas a,s,d,w para mover o player
 - ✅ Utilizar botões na tela para mover o player
 
-- [ ] Configurar TypeScript
-- [ ] Refactorar index.html (mover código para arquivos)
+- ✅ Configurar TypeScript
+- ✅ Utilizar workspaces para arquitetura de módulos separados (wep-app, server)
+- [ ] Refactorar wep-app/src/index.ts (mover código para arquivos)
 - [ ] Quando um player cair num buraco ele deve aparecer um popup que trava o jogo.

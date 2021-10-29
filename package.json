@@ -1,14 +1,22 @@
 {
-    "type": "module",
-    "main": "server.js",
+    "private": true,
     "scripts": {
-        "start": "nodemon --experimental-modules --es-module-specifier-resolution=node server.js"
+        "start": "concurrently \"yarn workspace @apps/web-app start\" \"yarn workspace @apps/server start\" "
     },
-    "dependencies": {
-        "express": "^4.17.1",
-        "socket.io": "^4.2.0"
+    "workspaces": {
+        "packages": [
+            "web-app",
+            "server"
+        ],
+        "nohoist": [
+            "**"
+        ]
+    },
+    "resolutions": {
+        "glob-parent": "^5.1.2",
+        "tar": "6.1.9"
     },
     "devDependencies": {
-        "nodemon": "^2.0.13"
+        "concurrently": "^6.0.0"
     }
 }

@@ -1,21 +1,21 @@
-export default function createKeyboardListener(document) {
+export default function createKeyboardListener(document: any) {
   document.addEventListener("keydown", handleKeydown);
 
-  const state = {
+  const state: any = {
     observers: [],
   };
 
-  function subscribe(observerFunction) {
+  function subscribe(observerFunction: any) {
     state.observers.push(observerFunction);
   }
 
-  function notifyAll(command) {
+  function notifyAll(command: any) {
     for (const observerFunction of state.observers) {
       observerFunction(command);
     }
   }
 
-  function handleKeydown(event) {
+  function handleKeydown(event: any) {
     notifyAll(event);
   }
 

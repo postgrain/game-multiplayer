@@ -1,5 +1,5 @@
 export default function createGameClient() {
-  const state = {
+  const state: any = {
     screen: {
       width: 0,
       height: 0,
@@ -18,7 +18,7 @@ export default function createGameClient() {
     currentFruits() {
       return Object.values(state.fruits);
     },
-    setup({ screen, players, fruits }) {
+    setup({ screen, players, fruits }: any) {
       state.screen = screen;
       state.players = players;
       state.fruits = fruits;
