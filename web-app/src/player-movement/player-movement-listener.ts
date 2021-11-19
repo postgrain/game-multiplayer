@@ -1,6 +1,16 @@
 import createKeyboardListener from "./keyboard-listener";
-import { Movement, AllowedMovements } from "./game-actions";
-import { GameClient } from "./game-client";
+import { GameClient } from "../game-client";
+
+export enum AllowedMovements {
+  Up = "MoveUp",
+  Down = "MoveDown",
+  Right = "MoveRight",
+  Left = "MoveLeft",
+}
+
+export interface Movement {
+  movement: AllowedMovements;
+}
 
 export class PlayerMovementListener {
   constructor(private gameClient: GameClient) {}
@@ -12,7 +22,6 @@ export class PlayerMovementListener {
   }
 }
 
-// infra
 export class ButtonsListener {
   constructor(private playerMovementListener: PlayerMovementListener) {
     const buttonMovementMap: { [key: string]: AllowedMovements } = {
@@ -22,6 +31,7 @@ export class ButtonsListener {
       Left: AllowedMovements.Left,
     };
 
+    // TODO: mover para classe de listener parecida com `createKeyboardListener`
     const movementButtons = document.querySelectorAll(".movement-btn");
     movementButtons.forEach((button) =>
       button.addEventListener("click", (event: any) => {
@@ -33,7 +43,6 @@ export class ButtonsListener {
   }
 }
 
-// infra
 export class KeyboardListener {
   constructor(private playerMovementListener: PlayerMovementListener) {
     const keyboardMovementsMap: { [key: number]: AllowedMovements } = {

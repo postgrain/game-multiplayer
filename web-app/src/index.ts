@@ -1,11 +1,7 @@
 import configureScreen from "./render-screen";
 import { GameClient } from "./game-client";
-import { GameActionsSocketIO } from "./game-actions-socketio";
-import {
-  PlayerMovementListener,
-  ButtonsListener,
-  KeyboardListener,
-} from "./player-movement";
+import { MovementActionSocketIO } from "./player-movement/movement-action-socketio";
+import { PlayerMovementServiceProvider } from "./player-movement";
 import { io } from "socket.io-client";
 
 // TODO: usar env var para url do servidor
@@ -16,11 +12,10 @@ socket.on("connect", () => {
 });
 
 socket.on("setup", (game: any) => {
-  const gameActions = new GameActionsSocketIO(socket);
+  const gameActions = new MovementActionSocketIO(socket);
   const gameClient = new GameClient(socket.id, gameActions);
-  const movementListener = new PlayerMovementListener(gameClient);
-  new ButtonsListener(movementListener);
-  new KeyboardListener(movementListener);
+
+  new PlayerMovementServiceProvider().register(gameClient);
 
   gameClient.setup({
     screen: game.state.screen,

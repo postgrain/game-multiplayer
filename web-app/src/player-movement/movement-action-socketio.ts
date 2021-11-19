@@ -1,8 +1,8 @@
-import { GameActions, Movement } from "./game-actions";
+import { MovementAction } from "./movement-action";
 import { Socket } from "socket.io-client";
+import { Movement } from "./player-movement-listener";
 
-// infra
-export class GameActionsSocketIO implements GameActions {
+export class MovementActionSocketIO implements MovementAction {
   constructor(private socket: Socket) {}
 
   playerDidMove(playerId: string, movement: Movement) {

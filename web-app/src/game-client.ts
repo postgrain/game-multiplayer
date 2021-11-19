@@ -1,4 +1,4 @@
-import { GameActions, Movement } from "./game-actions";
+import { Movement, MovementAction } from "./player-movement";
 
 export class GameClient {
   private state: any = {
@@ -10,24 +10,31 @@ export class GameClient {
     fruits: {},
   };
 
-  constructor(private playerId: string, private actions: GameActions) {}
+  constructor(
+    private playerId: string,
+    private movementAction: MovementAction
+  ) {}
 
   screen() {
     return this.state.screen;
   }
+
   currentPlayers() {
     return Object.values(this.state.players);
   }
+
   currentFruits() {
     return Object.values(this.state.fruits);
   }
+
   setup({ screen, players, fruits }: any) {
     this.state.screen = screen;
     this.state.players = players;
     this.state.fruits = fruits;
   }
+
   playerMoved(movement: Movement) {
     console.log("> player moved", { movement });
-    this.actions.playerDidMove(this.playerId, movement);
+    this.movementAction.playerDidMove(this.playerId, movement);
   }
 }
