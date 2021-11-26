@@ -1,7 +1,32 @@
 import { Movement, MovementAction } from "./player-movement";
 
+export interface Coordinates {
+  x: number;
+  y: number;
+}
+
+export interface Fruit extends Coordinates {}
+
+class Player implements Coordinates {
+  constructor(
+    public readonly x: number,
+    public readonly y: number,
+    public readonly id: string,
+    public readonly me: boolean
+  ) {}
+}
+
+export interface GameState {
+  screen: {
+    width: number;
+    height: number;
+  };
+  players: { [key: string]: Player };
+  fruits: { [key: string]: Fruit };
+}
+
 export class GameClient {
-  private state: any = {
+  private state: GameState = {
     screen: {
       width: 0,
       height: 0,
@@ -28,6 +53,10 @@ export class GameClient {
   }
 
   setup({ screen, players, fruits }: any) {
+    Object.entries<Coordinates>(players).forEach(([key, value]) => {
+      players[key] = new Player(value.x, value.y, key, key == this.playerId);
+    });
+
     this.state.screen = screen;
     this.state.players = players;
     this.state.fruits = fruits;

@@ -4,6 +4,7 @@ import {
   MoveRightAction,
   MoveLeftAction,
 } from "./player-movements";
+import crypto from "crypto";
 
 export interface Coordinates {
   x: number;
@@ -24,6 +25,7 @@ export interface GameState {
 }
 
 export default function createGame() {
+  const observers: any = [];
   const state: GameState = {
     players: {},
     fruits: {},
@@ -77,15 +79,18 @@ export default function createGame() {
   }
   **/
 
+  _spawnFruits();
+
+  function generateRandomCoordinates() {
+    return {
+      x: Math.floor(Math.random() * state.screen.width + 1),
+      y: Math.floor(Math.random() * state.screen.height + 1),
+    };
+  }
+
   function addPlayer(command: any) {
     const playerId = command.playerId;
-    const playerX = Math.floor(Math.random() * state.screen.width + 1);
-    const playerY = Math.floor(Math.random() * state.screen.height + 1);
-
-    state.players[playerId] = {
-      x: playerX,
-      y: playerY,
-    };
+    state.players[playerId] = generateRandomCoordinates();
   }
 
   function removePlayer(command: any) {
@@ -105,6 +110,15 @@ export default function createGame() {
     const fruitId = command.fruitId;
 
     delete state.fruits[fruitId];
+  }
+
+  function _spawnFruits() {
+    setInterval(() => {
+      var id = crypto.randomInt(0, 1000000);
+      const { x, y } = generateRandomCoordinates();
+      addFruit({ fruitId: id, fruitX: x, fruitY: y });
+      notify();
+    }, 1000);
   }
 
   /**
@@ -148,6 +162,16 @@ export default function createGame() {
     }
   }
 
+  function onStateChanged(observerFn: (state: GameState) => void) {
+    observers.push(observerFn);
+  }
+
+  function notify() {
+    observers.forEach((observerFn: (state: GameState) => void) => {
+      observerFn(state);
+    });
+  }
+
   return {
     state,
     movePlayer,
@@ -155,5 +179,6 @@ export default function createGame() {
     removePlayer,
     addFruit,
     removeFruit,
+    onStateChanged,
   };
 }

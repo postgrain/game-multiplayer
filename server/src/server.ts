@@ -4,6 +4,7 @@ import { Server } from "socket.io";
 import cors from "cors";
 
 import createGame from "./game";
+import { GameState } from "./game";
 
 const app = express();
 
@@ -24,6 +25,10 @@ game.addFruit({ fruitId: "fruit2", fruitX: 7, fruitY: 5 });
 
 server.listen(3000, () => {
   console.log("Server up on port 3000");
+});
+
+game.onStateChanged((state: GameState) => {
+  sockets.emit("stateChanged", state);
 });
 
 sockets.on("connection", (socket) => {

@@ -23,7 +23,7 @@ socket.on("setup", (game: any) => {
     fruits: game.state.fruits,
   });
 
-  const canvas = document.getElementById("screen");
+  const canvas = document.getElementById("screen") as HTMLCanvasElement;
   configureScreen(canvas, gameClient)(requestAnimationFrame);
 
   socket.on("stateChanged", (state: any) => {
