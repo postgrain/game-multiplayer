@@ -23,8 +23,8 @@ const game = createGame();
 game.addFruit({ fruitId: "fruit1", fruitX: 5, fruitY: 5 });
 game.addFruit({ fruitId: "fruit2", fruitX: 7, fruitY: 5 });
 
-server.listen(3000, () => {
-  console.log("Server up on port 3000");
+server.listen(4200, () => {
+  console.log("Server up on port 4200");
 });
 
 game.onStateChanged((state: GameState) => {

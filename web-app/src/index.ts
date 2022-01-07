@@ -4,8 +4,10 @@ import { MovementActionSocketIO } from "./player-movement/movement-action-socket
 import { PlayerMovementServiceProvider } from "./player-movement";
 import { io } from "socket.io-client";
 
+
+
 // TODO: usar env var para url do servidor
-const socket = io("ws://localhost:3000");
+const socket = io(`ws://${process.env.API_URL}`);
 
 socket.on("connect", () => {
   console.log("> Conexão aberta com o server: ", socket.id);
