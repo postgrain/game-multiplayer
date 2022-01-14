@@ -4,9 +4,6 @@ import { MovementActionSocketIO } from "./player-movement/movement-action-socket
 import { PlayerMovementServiceProvider } from "./player-movement";
 import { io } from "socket.io-client";
 
-
-
-// TODO: usar env var para url do servidor
 const socket = io(`ws://${process.env.API_URL}`);
 
 socket.on("connect", () => {
@@ -26,7 +23,9 @@ socket.on("setup", (game: any) => {
   });
 
   const canvas = document.getElementById("screen") as HTMLCanvasElement;
-  configureScreen(canvas, gameClient)(requestAnimationFrame);
+  const score = document.getElementById("score") as HTMLElement;
+
+  configureScreen(gameClient, canvas, score)(requestAnimationFrame);
 
   socket.on("stateChanged", (state: any) => {
     gameClient.setup({

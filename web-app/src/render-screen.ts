@@ -1,8 +1,9 @@
 import { GameClient } from "./game-client";
 
 export default function configureScreen(
+  game: GameClient,
   canvas: HTMLCanvasElement,
-  game: GameClient
+  scoreElement: HTMLElement
 ) {
   const context = canvas.getContext("2d")!;
   const { width, height } = game.screen();
@@ -14,7 +15,14 @@ export default function configureScreen(
     context.clearRect(0, 0, width, height);
 
     for (const player of game.currentPlayers()) {
-      context.fillStyle = player.me ? "#b8ad21" : "black";
+      let color = "black";
+
+      if (player.me) {
+        color = "#b8ad21";
+        renderPlayerScore(scoreElement, player.score);
+      }
+
+      context.fillStyle = color;
       context.fillRect(player.x, player.y, 1, 1);
     }
 
@@ -27,4 +35,9 @@ export default function configureScreen(
       renderScreen(requestAnimationFrame);
     });
   };
+}
+
+// atualizar na tela o score do Me (Player)
+function renderPlayerScore(scoreElement: HTMLElement, score: number) {
+  scoreElement.innerText = score.toString();
 }

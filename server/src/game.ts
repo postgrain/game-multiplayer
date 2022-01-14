@@ -11,7 +11,9 @@ export interface Coordinates {
   y: number;
 }
 
-export interface Player extends Coordinates {}
+export interface Player extends Coordinates {
+  score: number
+}
 
 export interface Fruit extends Coordinates {}
 
@@ -90,7 +92,7 @@ export default function createGame() {
 
   function addPlayer(command: any) {
     const playerId = command.playerId;
-    state.players[playerId] = generateRandomCoordinates();
+    state.players[playerId] = { ...generateRandomCoordinates(), score: 0 };
   }
 
   function removePlayer(command: any) {
@@ -158,8 +160,13 @@ export default function createGame() {
       const fruit = state.fruits[fruitId];
       if (player.x === fruit.x && player.y === fruit.y) {
         removeFruit({ fruitId });
+        incrementPlayerScore(player)
       }
     }
+  }
+
+  function incrementPlayerScore(player: Player) {
+    player.score += 1
   }
 
   function onStateChanged(observerFn: (state: GameState) => void) {
