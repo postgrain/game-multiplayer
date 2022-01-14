@@ -20,6 +20,7 @@ socket.on("setup", (game: any) => {
     screen: game.state.screen,
     players: game.state.players,
     fruits: game.state.fruits,
+    traps: game.state.traps
   });
 
   const canvas = document.getElementById("screen") as HTMLCanvasElement;
@@ -32,6 +33,11 @@ socket.on("setup", (game: any) => {
       screen: state.screen,
       players: state.players,
       fruits: state.fruits,
+      traps: state.traps,
     });
+  });
+
+  socket.on("fellIntoATrap", () => {
+    alert('Você caiu em um buraco! hahahahahah!');
   });
 });

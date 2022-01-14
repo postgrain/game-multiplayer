@@ -31,6 +31,11 @@ export default function configureScreen(
       context.fillRect(fruit.x, fruit.y, 1, 1);
     }
 
+    for (const trap of game.currentTraps()) {
+      context.fillStyle = "brown";
+      context.fillRect(trap.x, trap.y, 1, 1);
+    }
+
     requestAnimationFrame(() => {
       renderScreen(requestAnimationFrame);
     });

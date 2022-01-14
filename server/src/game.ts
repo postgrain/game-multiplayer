@@ -17,9 +17,12 @@ export interface Player extends Coordinates {
 
 export interface Fruit extends Coordinates {}
 
+export interface Trap extends Coordinates {}
+
 export interface GameState {
   players: { [key: string]: Player };
   fruits: { [key: string]: Fruit };
+  traps: { [key: string]: Trap };
   screen: {
     width: number;
     height: number;
@@ -28,9 +31,11 @@ export interface GameState {
 
 export default function createGame() {
   const observers: any = [];
+  let trapObserver: any = () => {};
   const state: GameState = {
     players: {},
     fruits: {},
+    traps: {},
     screen: {
       width: 50,
       height: 50,
@@ -82,6 +87,7 @@ export default function createGame() {
   **/
 
   _spawnFruits();
+  _spawnTraps();
 
   function generateRandomCoordinates() {
     return {
@@ -114,6 +120,19 @@ export default function createGame() {
     delete state.fruits[fruitId];
   }
 
+  function addTrap(command: any) {
+    state.traps[command.trapId] = {
+      x: command.trapX,
+      y: command.trapY,
+    };
+  }
+
+  function removeTrap(command: any) {
+    const trapId = command.trapId;
+
+    delete state.traps[trapId];
+  }
+
   function _spawnFruits() {
     setInterval(() => {
       var id = crypto.randomInt(0, 1000000);
@@ -121,6 +140,18 @@ export default function createGame() {
       addFruit({ fruitId: id, fruitX: x, fruitY: y });
       notify();
     }, 1000);
+  }
+
+  function _spawnTraps() {
+    setInterval(() => {
+      var id = crypto.randomInt(0, 1000000);
+      const { x, y } = generateRandomCoordinates();
+      // TODO: ao adicionar uma trap, deve ser verificado se a trap está na mesma coordenada que uma fruta.
+      // se estiver, a trap está numa posição invalida e deve ser gerado novamente uma coordenada para a trap.
+      // isso se repete até que uma posição válida para a trap seja encontrada.
+      addTrap({ trapId: id, trapX: x, trapY: y });
+      notify();
+    }, 15000);
   }
 
   /**
@@ -149,7 +180,19 @@ export default function createGame() {
       const movement = new Movement(state, player);
       movement.execute();
       checkForFruitCollision(command.playerId);
-      // checkTrapCollision(command.playerId);
+      checkForTrapCollision(command.playerId);
+    }
+  }
+
+  function checkForTrapCollision(playerId: any) {
+    const player = state.players[playerId];
+
+    for (const trapId in state.traps) {
+      const trap = state.traps[trapId];
+      if (player.x === trap.x && player.y === trap.y) {
+        removeTrap({ trapId });
+        fellIntoATrap(playerId);
+      }
     }
   }
 
@@ -179,6 +222,14 @@ export default function createGame() {
     });
   }
 
+  function onFellIntoATrap(fn: any) {
+    trapObserver = fn;
+  }
+
+  function fellIntoATrap(playerId: any) {
+    trapObserver(playerId);
+  }
+
   return {
     state,
     movePlayer,
@@ -186,6 +237,9 @@ export default function createGame() {
     removePlayer,
     addFruit,
     removeFruit,
+    addTrap,
+    removeTrap,
     onStateChanged,
+    onFellIntoATrap,
   };
 }

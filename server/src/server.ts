@@ -31,6 +31,10 @@ game.onStateChanged((state: GameState) => {
   sockets.emit("stateChanged", state);
 });
 
+game.onFellIntoATrap((playerId: any) => {
+  sockets.to(playerId).emit("fellIntoATrap");
+});
+
 sockets.on("connection", (socket) => {
   console.log("> Novo client conectado: ", socket.id);
   game.addPlayer({ playerId: socket.id });

@@ -20,6 +20,7 @@
 - ✅ Definir cores diferentes para Player e MyPlayer.
 - ✅ spawn frutas randomicamente.
 - ✅ Score dos players.
+- ✅ Quando um player cair num buraco ele deve aparecer um popup que trava o jogo.
 - [ ] Ao coletar uma fruta com poder o MyPlayer pode ganhar uma ação especial(velocidade, tiro).
 - [ ] Permitir movimentação do MyPlayer através do mouse no canvas.
-- [ ] Quando um player cair num buraco ele deve aparecer um popup que trava o jogo.
+- [ ] Configurar NX Workspace
