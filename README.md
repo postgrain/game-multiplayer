@@ -25,3 +25,7 @@
 - [ ] Ao coletar uma fruta com poder o MyPlayer pode ganhar uma ação especial(velocidade, tiro).
 - [ ] Permitir movimentação do MyPlayer através do mouse no canvas.
 - [ ] Configurar NX Workspace
+
+
+**Jogabilidade**
+- [ ] Player com movimento na diagonal
