@@ -20,9 +20,6 @@ const sockets = new Server(server, {
 
 const game = createGame();
 
-game.addFruit({ fruitId: "fruit1", fruitX: 5, fruitY: 5 });
-game.addFruit({ fruitId: "fruit2", fruitX: 7, fruitY: 5 });
-
 server.listen(4200, () => {
   console.log("Server up on port 4200");
 });
@@ -37,6 +34,7 @@ game.onFellIntoATrap((playerId: any) => {
 
 sockets.on("connection", (socket) => {
   console.log("> Novo client conectado: ", socket.id);
+  // game.players.add({ playerId: socket.id });
   game.addPlayer({ playerId: socket.id });
   socket.emit("setup", game);
 
@@ -46,6 +44,7 @@ sockets.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
+    // game.players.remove({ playerId: socket.id });
     game.removePlayer({ playerId: socket.id });
   });
 });

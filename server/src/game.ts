@@ -5,14 +5,10 @@ import {
   MoveLeftAction,
 } from "./player-movements";
 import crypto from "crypto";
-
-export interface Coordinates {
-  x: number;
-  y: number;
-}
-
+import { Fruits, FruitsSpawn } from "./fruits";
+import { Coordinates } from "./coordinate";
 export interface Player extends Coordinates {
-  score: number
+  score: number;
 }
 
 export interface Fruit extends Coordinates {}
@@ -32,7 +28,7 @@ export interface GameState {
 export default function createGame() {
   const observers: any = [];
   let trapObserver: any = () => {};
-  const state: GameState = {
+  let state: GameState = {
     players: {},
     fruits: {},
     traps: {},
@@ -40,53 +36,26 @@ export default function createGame() {
       width: 50,
       height: 50,
     },
-    // board: [
-    //     // x, y
-    //     {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
-    //     {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
-    //     {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
-    //     {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
-    //     {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
-    //     {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
-    //     {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
-    //     {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
-    //     {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
-    //     {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
-    // ]
+  };
+  const fruits = new Fruits([state, mutateState]);
+  const game = {
+    fruits,
+    get state() {
+      return state;
+    },
+    movePlayer,
+    addPlayer,
+    removePlayer,
+    addTrap,
+    removeTrap,
+    onStateChanged,
+    onFellIntoATrap,
+    generateRandomCoordinates,
+    notify,
   };
 
-  /**
-   * # Abstração adiantada. Possíveis efeitos negativos no sistema.
-   * Integridade conceitual -> complexidade acidental
-
-   * 1. pode existir mais de uma fruta na mesma coord, mas não mais que um player.
-   * 2. uma fruta não pode ser adicionada em cima de player
-   * 3. uma fruta não pode ser adicionada próximo de um player
-
-  function addObject(command, key) {
-      for (let player of state.players) {
-          if (player.x == command.x && player.y == command.y) {
-              if (key === 'players') {
-                  console.log(`Collision between ${command.objectId} and ${player.objectId}`);
-              } else if(key === 'fruits') {
-                  console.log(`Fruits cannot be added over players`);
-              }
-              return;
-          }
-      }
-
-      state[key][command.objectId] = {
-          x: command.x,
-          y: command.y
-      }
-  }
-
-  function removeObject(command, key) {
-      delete state[key][command.objectId]
-  }
-  **/
-
-  _spawnFruits();
+  const fruitsSpawn = new FruitsSpawn(game);
+  fruitsSpawn.spawn();
   _spawnTraps();
 
   function generateRandomCoordinates() {
@@ -107,19 +76,6 @@ export default function createGame() {
     delete state.players[playerId];
   }
 
-  function addFruit(command: any) {
-    state.fruits[command.fruitId] = {
-      x: command.fruitX,
-      y: command.fruitY,
-    };
-  }
-
-  function removeFruit(command: any) {
-    const fruitId = command.fruitId;
-
-    delete state.fruits[fruitId];
-  }
-
   function addTrap(command: any) {
     state.traps[command.trapId] = {
       x: command.trapX,
@@ -131,15 +87,6 @@ export default function createGame() {
     const trapId = command.trapId;
 
     delete state.traps[trapId];
-  }
-
-  function _spawnFruits() {
-    setInterval(() => {
-      var id = crypto.randomInt(0, 1000000);
-      const { x, y } = generateRandomCoordinates();
-      addFruit({ fruitId: id, fruitX: x, fruitY: y });
-      notify();
-    }, 1000);
   }
 
   function _spawnTraps() {
@@ -202,14 +149,14 @@ export default function createGame() {
     for (const fruitId in state.fruits) {
       const fruit = state.fruits[fruitId];
       if (player.x === fruit.x && player.y === fruit.y) {
-        removeFruit({ fruitId });
-        incrementPlayerScore(player)
+        fruits.remove({ fruitId });
+        incrementPlayerScore(player);
       }
     }
   }
 
   function incrementPlayerScore(player: Player) {
-    player.score += 1
+    player.score += 1;
   }
 
   function onStateChanged(observerFn: (state: GameState) => void) {
@@ -230,16 +177,12 @@ export default function createGame() {
     trapObserver(playerId);
   }
 
-  return {
-    state,
-    movePlayer,
-    addPlayer,
-    removePlayer,
-    addFruit,
-    removeFruit,
-    addTrap,
-    removeTrap,
-    onStateChanged,
-    onFellIntoATrap,
-  };
+  function mutateState(newState: Partial<GameState>) {
+    state = {
+      ...state,
+      ...newState,
+    };
+  }
+
+  return game;
 }
