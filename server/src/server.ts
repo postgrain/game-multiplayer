@@ -34,17 +34,20 @@ game.onFellIntoATrap((playerId: any) => {
 
 sockets.on("connection", (socket) => {
   console.log("> Novo client conectado: ", socket.id);
+
   // game.players.add({ playerId: socket.id });
-  game.addPlayer({ playerId: socket.id });
+  const player = game.addPlayer(socket.id);
+
   socket.emit("setup", game);
 
   socket.on("playerMoved", (command) => {
-    game.movePlayer(command);
+    game.movePlayer({ ...command, player });
     sockets.emit("stateChanged", game.state);
   });
 
   socket.on("disconnect", () => {
     // game.players.remove({ playerId: socket.id });
-    game.removePlayer({ playerId: socket.id });
+    game.players.remove(player);
+    console.log(game.state.players[player.id]);
   });
 });

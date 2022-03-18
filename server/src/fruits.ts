@@ -32,6 +32,16 @@ export class Fruits {
   remove(command: any) {
     delete this.state.fruits[command.fruitId];
   }
+
+  removeWhenCollided({ x, y }: Coordinates, fn: () => void) {
+    for (const fruitId in this.state.fruits) {
+      const fruit = this.state.fruits[fruitId];
+      if (x === fruit.x && y === fruit.y) {
+        this.remove({ fruitId });
+        fn();
+      }
+    }
+  }
 }
 
 export class FruitsSpawn {

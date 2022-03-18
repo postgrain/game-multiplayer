@@ -4,19 +4,17 @@ import {
   MoveRightAction,
   MoveLeftAction,
 } from "./player-movements";
-import crypto from "crypto";
 import { Fruits, FruitsSpawn } from "./fruits";
 import { Coordinates } from "./coordinate";
-export interface Player extends Coordinates {
-  score: number;
-}
+import { Traps, TrapsSpawn } from "./traps";
+import { Player, PlayersManager } from "./players";
 
 export interface Fruit extends Coordinates {}
 
 export interface Trap extends Coordinates {}
 
 export interface GameState {
-  players: { [key: string]: Player };
+  players: { [key: string]: { score: number } & Coordinates };
   fruits: { [key: string]: Fruit };
   traps: { [key: string]: Trap };
   screen: {
@@ -38,16 +36,19 @@ export default function createGame() {
     },
   };
   const fruits = new Fruits([state, mutateState]);
+  const traps = new Traps([state, mutateState]);
+  const players = new PlayersManager([state, mutateState]);
+
   const game = {
     fruits,
+    traps,
+    players,
     get state() {
       return state;
     },
     movePlayer,
     addPlayer,
     removePlayer,
-    addTrap,
-    removeTrap,
     onStateChanged,
     onFellIntoATrap,
     generateRandomCoordinates,
@@ -55,8 +56,9 @@ export default function createGame() {
   };
 
   const fruitsSpawn = new FruitsSpawn(game);
+  const trapsSpawn = new TrapsSpawn(game);
   fruitsSpawn.spawn();
-  _spawnTraps();
+  trapsSpawn.spawn();
 
   function generateRandomCoordinates() {
     return {
@@ -65,40 +67,16 @@ export default function createGame() {
     };
   }
 
-  function addPlayer(command: any) {
-    const playerId = command.playerId;
-    state.players[playerId] = { ...generateRandomCoordinates(), score: 0 };
+  function addPlayer(playerId: string) {
+    const player = new Player(playerId, generateRandomCoordinates());
+    players.add(player);
+    return player;
   }
 
   function removePlayer(command: any) {
     const playerId = command.playerId;
 
     delete state.players[playerId];
-  }
-
-  function addTrap(command: any) {
-    state.traps[command.trapId] = {
-      x: command.trapX,
-      y: command.trapY,
-    };
-  }
-
-  function removeTrap(command: any) {
-    const trapId = command.trapId;
-
-    delete state.traps[trapId];
-  }
-
-  function _spawnTraps() {
-    setInterval(() => {
-      var id = crypto.randomInt(0, 1000000);
-      const { x, y } = generateRandomCoordinates();
-      // TODO: ao adicionar uma trap, deve ser verificado se a trap está na mesma coordenada que uma fruta.
-      // se estiver, a trap está numa posição invalida e deve ser gerado novamente uma coordenada para a trap.
-      // isso se repete até que uma posição válida para a trap seja encontrada.
-      addTrap({ trapId: id, trapX: x, trapY: y });
-      notify();
-    }, 15000);
   }
 
   /**
@@ -110,9 +88,8 @@ export default function createGame() {
 
   // strategy pattern + factory pattern
 
-  function movePlayer(command: any) {
+  function movePlayer(command: { movement: string; player: Player }) {
     // const keyPressed = command.movement; // https://refactoring.guru/pt-br/inline-temp
-    const player = state.players[command.playerId];
 
     const MovementMap: { [key: string]: any } = {
       MoveUp: MoveUpAction,
@@ -123,40 +100,22 @@ export default function createGame() {
 
     const Movement = MovementMap[command.movement];
 
-    if (player && Movement) {
-      const movement = new Movement(state, player);
+    if (command.player && Movement) {
+      const movement = new Movement(state, command.player);
       movement.execute();
-      checkForFruitCollision(command.playerId);
-      checkForTrapCollision(command.playerId);
+      players.move(command.player);
+      movementExecuted(command.player);
     }
   }
 
-  function checkForTrapCollision(playerId: any) {
-    const player = state.players[playerId];
+  function movementExecuted(player: Player) {
+    fruits.removeWhenCollided(state.players[player.id], () => {
+      players.incrementsScoreFor(player);
+    });
 
-    for (const trapId in state.traps) {
-      const trap = state.traps[trapId];
-      if (player.x === trap.x && player.y === trap.y) {
-        removeTrap({ trapId });
-        fellIntoATrap(playerId);
-      }
-    }
-  }
-
-  function checkForFruitCollision(playerId: any) {
-    const player = state.players[playerId];
-
-    for (const fruitId in state.fruits) {
-      const fruit = state.fruits[fruitId];
-      if (player.x === fruit.x && player.y === fruit.y) {
-        fruits.remove({ fruitId });
-        incrementPlayerScore(player);
-      }
-    }
-  }
-
-  function incrementPlayerScore(player: Player) {
-    player.score += 1;
+    traps.removeWhenCollided(state.players[player.id], () => {
+      trapObserver(player.id);
+    });
   }
 
   function onStateChanged(observerFn: (state: GameState) => void) {
@@ -171,10 +130,6 @@ export default function createGame() {
 
   function onFellIntoATrap(fn: any) {
     trapObserver = fn;
-  }
-
-  function fellIntoATrap(playerId: any) {
-    trapObserver(playerId);
   }
 
   function mutateState(newState: Partial<GameState>) {

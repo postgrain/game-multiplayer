@@ -6,7 +6,7 @@ export interface Coordinates {
 }
 
 export interface PlayerPayload extends Coordinates {
-  score: number
+  score: number;
 }
 
 export interface Fruit extends Coordinates {}
@@ -19,7 +19,7 @@ class Player implements PlayerPayload {
     public readonly y: number,
     public readonly score: number,
     public readonly id: string,
-    public readonly me: boolean,
+    public readonly me: boolean
   ) {}
 }
 
@@ -41,7 +41,7 @@ export class GameClient {
     },
     players: {},
     fruits: {},
-    traps: {}
+    traps: {},
   };
 
   constructor(
@@ -67,7 +67,13 @@ export class GameClient {
 
   setup({ screen, players, fruits, traps }: any) {
     Object.entries<PlayerPayload>(players).forEach(([key, value]) => {
-      players[key] = new Player(value.x, value.y, value.score, key, key == this.playerId);
+      players[key] = new Player(
+        value.x,
+        value.y,
+        value.score,
+        key,
+        key == this.playerId
+      );
     });
 
     this.state.screen = screen;
@@ -78,6 +84,7 @@ export class GameClient {
 
   playerMoved(movement: Movement) {
     console.log("> player moved", { movement });
+    // weirdo
     this.movementAction.playerDidMove(this.playerId, movement);
   }
 }
