@@ -7,6 +7,11 @@ export default function createKeyboardListener(document: any) {
 
   function subscribe(observerFunction: any) {
     state.observers.push(observerFunction);
+    return () => {
+      state.observers = state.observers.filter(
+        (fn: any) => fn !== observerFunction
+      );
+    };
   }
 
   function notifyAll(command: any) {

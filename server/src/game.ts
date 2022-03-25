@@ -4,9 +4,9 @@ import {
   MoveRightAction,
   MoveLeftAction,
 } from "./player-movements";
-import { Fruits, FruitsSpawn } from "./fruits";
-import { Coordinates } from "./coordinate";
-import { Traps, TrapsSpawn } from "./traps";
+import { FruitsManager, FruitsSpawn } from "./fruits";
+import { Coordinates, generateRandomCoordinates } from "./coordinate";
+import { TrapsManager, TrapsSpawn } from "./traps";
 import { Player, PlayersManager } from "./players";
 
 export interface Fruit extends Coordinates {}
@@ -23,10 +23,10 @@ export interface GameState {
   };
 }
 
-export default function createGame() {
-  const observers: any = [];
-  let trapObserver: any = () => {};
-  let state: GameState = {
+export class Game {
+  private observers: ((state: GameState) => void)[] = [];
+  trapObserver: any = () => {};
+  state: GameState = {
     players: {},
     fruits: {},
     traps: {},
@@ -35,62 +35,40 @@ export default function createGame() {
       height: 50,
     },
   };
-  const fruits = new Fruits([state, mutateState]);
-  const traps = new Traps([state, mutateState]);
-  const players = new PlayersManager([state, mutateState]);
+  fruits = new FruitsManager([this.state, this.mutateState]);
+  traps = new TrapsManager([this.state, this.mutateState]);
+  players = new PlayersManager([this.state, this.mutateState]);
+  fruitsSpawn = new FruitsSpawn(this);
+  trapsSpawn = new TrapsSpawn(this);
 
-  const game = {
-    fruits,
-    traps,
-    players,
-    get state() {
-      return state;
-    },
-    movePlayer,
-    addPlayer,
-    removePlayer,
-    onStateChanged,
-    onFellIntoATrap,
-    generateRandomCoordinates,
-    notify,
-  };
-
-  const fruitsSpawn = new FruitsSpawn(game);
-  const trapsSpawn = new TrapsSpawn(game);
-  fruitsSpawn.spawn();
-  trapsSpawn.spawn();
-
-  function generateRandomCoordinates() {
-    return {
-      x: Math.floor(Math.random() * state.screen.width + 1),
-      y: Math.floor(Math.random() * state.screen.height + 1),
-    };
+  constructor() {
+    this.fruitsSpawn.spawn();
+    this.trapsSpawn.spawn();
   }
 
-  function addPlayer(playerId: string) {
-    const player = new Player(playerId, generateRandomCoordinates());
-    players.add(player);
+  static create() {
+    return new Game();
+  }
+
+  addPlayer(playerId: string) {
+    const player = new Player(
+      playerId,
+      generateRandomCoordinates(
+        this.state.screen.width,
+        this.state.screen.width
+      )
+    );
+    this.players.add(player);
     return player;
   }
 
-  function removePlayer(command: any) {
+  removePlayer(command: any) {
     const playerId = command.playerId;
 
-    delete state.players[playerId];
+    delete this.state.players[playerId];
   }
 
-  /**
-   * Padrões de projeto.
-   * Utilizando o Command Pattern e o Strategy.
-   *
-   * Ver arquivo exemplos/command.ts
-   */
-
-  // strategy pattern + factory pattern
-
-  function movePlayer(command: { movement: string; player: Player }) {
-    // const keyPressed = command.movement; // https://refactoring.guru/pt-br/inline-temp
-
+  movePlayer(command: { movement: string; player: Player }) {
     const MovementMap: { [key: string]: any } = {
       MoveUp: MoveUpAction,
       MoveDown: MoveDownAction,
@@ -101,43 +79,42 @@ export default function createGame() {
     const Movement = MovementMap[command.movement];
 
     if (command.player && Movement) {
-      const movement = new Movement(state, command.player);
+      const movement = new Movement(this.state, command.player);
       movement.execute();
-      players.move(command.player);
-      movementExecuted(command.player);
+      this.players.move(command.player);
+      this.movementExecuted(command.player);
     }
   }
 
-  function movementExecuted(player: Player) {
-    fruits.removeWhenCollided(state.players[player.id], () => {
-      players.incrementsScoreFor(player);
-    });
-
-    traps.removeWhenCollided(state.players[player.id], () => {
-      trapObserver(player.id);
-    });
+  onStateChanged(observerFn: (state: GameState) => void) {
+    this.observers.push(observerFn);
   }
 
-  function onStateChanged(observerFn: (state: GameState) => void) {
-    observers.push(observerFn);
-  }
-
-  function notify() {
-    observers.forEach((observerFn: (state: GameState) => void) => {
-      observerFn(state);
+  notify() {
+    this.observers.forEach((observerFn: (state: GameState) => void) => {
+      observerFn(this.state);
     });
   }
 
-  function onFellIntoATrap(fn: any) {
-    trapObserver = fn;
+  onFellIntoATrap(fn: any) {
+    this.trapObserver = fn;
   }
 
-  function mutateState(newState: Partial<GameState>) {
-    state = {
-      ...state,
+  mutateState(newState: Partial<GameState>) {
+    this.state = {
+      ...this.state,
       ...newState,
     };
   }
 
-  return game;
+  private movementExecuted(player: Player) {
+    this.fruits.removeWhenCollided(this.state.players[player.id], () => {
+      this.players.incrementsScoreFor(player);
+    });
+
+    this.traps.removeWhenCollided(this.state.players[player.id], () => {
+      this.trapObserver(player.id);
+    });
+    this.notify();
+  }
 }

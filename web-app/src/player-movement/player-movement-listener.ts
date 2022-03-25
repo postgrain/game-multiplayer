@@ -23,47 +23,66 @@ export class PlayerMovementListener {
 }
 
 export class ButtonsListener {
-  constructor(private playerMovementListener: PlayerMovementListener) {
-    const buttonMovementMap: { [key: string]: AllowedMovements } = {
-      Up: AllowedMovements.Up,
-      Down: AllowedMovements.Down,
-      Right: AllowedMovements.Right,
-      Left: AllowedMovements.Left,
-    };
+  movementButtons = document.querySelectorAll(".movement-btn");
+  readonly buttonMovementMap: { [key: string]: AllowedMovements } = {
+    Up: AllowedMovements.Up,
+    Down: AllowedMovements.Down,
+    Right: AllowedMovements.Right,
+    Left: AllowedMovements.Left,
+  };
+  handler = this.handleBtnClick.bind(this);
 
+  constructor(public playerMovementListener: PlayerMovementListener) {}
+
+  register() {
     // TODO: mover para classe de listener parecida com `createKeyboardListener`
-    const movementButtons = document.querySelectorAll(".movement-btn");
-    movementButtons.forEach((button) =>
-      button.addEventListener("click", (event: any) => {
-        this.playerMovementListener.onMovement(
-          buttonMovementMap[event.target.dataset.movement]
-        );
-      })
+
+    this.movementButtons.forEach((button) =>
+      button.addEventListener("click", this.handler)
+    );
+  }
+
+  unregister() {
+    this.movementButtons.forEach((button) =>
+      button.removeEventListener("click", this.handler)
+    );
+  }
+
+  private handleBtnClick(event: any) {
+    this.playerMovementListener.onMovement(
+      this.buttonMovementMap[event.target.dataset.movement]
     );
   }
 }
 
 export class KeyboardListener {
-  constructor(private playerMovementListener: PlayerMovementListener) {
-    const keyboardMovementsMap: { [key: number]: AllowedMovements } = {
-      38: AllowedMovements.Up,
-      87: AllowedMovements.Up,
+  keyboardListener = createKeyboardListener(document);
+  readonly keyboardMovementsMap: { [key: number]: AllowedMovements } = {
+    38: AllowedMovements.Up,
+    87: AllowedMovements.Up,
 
-      40: AllowedMovements.Down,
-      83: AllowedMovements.Down,
+    40: AllowedMovements.Down,
+    83: AllowedMovements.Down,
 
-      37: AllowedMovements.Left,
-      65: AllowedMovements.Left,
+    37: AllowedMovements.Left,
+    65: AllowedMovements.Left,
 
-      39: AllowedMovements.Right,
-      68: AllowedMovements.Right,
-    };
+    39: AllowedMovements.Right,
+    68: AllowedMovements.Right,
+  };
+  subscription: any;
 
-    const keyboardListener = createKeyboardListener(document);
-    keyboardListener.subscribe((keyEvent: any) => {
+  constructor(private playerMovementListener: PlayerMovementListener) {}
+
+  register() {
+    this.subscription = this.keyboardListener.subscribe((keyEvent: any) => {
       this.playerMovementListener.onMovement(
-        keyboardMovementsMap[keyEvent.keyCode]
+        this.keyboardMovementsMap[keyEvent.keyCode]
       );
     });
+  }
+
+  unregister() {
+    this.subscription?.();
   }
 }

@@ -5,22 +5,28 @@ import { PlayerMovementServiceProvider } from "./player-movement";
 import { io } from "socket.io-client";
 
 const socket = io(`ws://${process.env.API_URL}`);
-
+let movementService: PlayerMovementServiceProvider;
 socket.on("connect", () => {
   console.log("> Conexão aberta com o server: ", socket.id);
 });
 
-socket.on("setup", (game: any) => {
+socket.on("disconnect", () => {
+  console.log("> Conexão perdida com o servidor: ", socket.id);
+  movementService?.unregister();
+});
+
+socket.on("setup", ({ screen, players, fruits, traps }: any) => {
   const gameActions = new MovementActionSocketIO(socket);
   const gameClient = new GameClient(socket.id, gameActions);
 
-  new PlayerMovementServiceProvider().register(gameClient);
+  movementService = new PlayerMovementServiceProvider();
+  movementService.register(gameClient);
 
   gameClient.setup({
-    screen: game.state.screen,
-    players: game.state.players,
-    fruits: game.state.fruits,
-    traps: game.state.traps
+    screen,
+    players,
+    fruits,
+    traps,
   });
 
   const canvas = document.getElementById("screen") as HTMLCanvasElement;
@@ -28,16 +34,16 @@ socket.on("setup", (game: any) => {
 
   configureScreen(gameClient, canvas, score)(requestAnimationFrame);
 
-  socket.on("stateChanged", (state: any) => {
+  socket.on("stateChanged", ({ screen, players, fruits, traps }: any) => {
     gameClient.setup({
-      screen: state.screen,
-      players: state.players,
-      fruits: state.fruits,
-      traps: state.traps,
+      screen,
+      players,
+      fruits,
+      traps,
     });
   });
 
   socket.on("fellIntoATrap", () => {
-    alert('Você caiu em um buraco! hahahahahah!');
+    alert("Você caiu em um buraco! hahahahahah!");
   });
 });

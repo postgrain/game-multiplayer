@@ -1,8 +1,8 @@
 import { GameState } from "./game";
 import crypto from "crypto";
-import { Coordinates } from "./coordinate";
+import { Coordinates, generateRandomCoordinates } from "./coordinate";
 
-export class Fruits {
+export class FruitsManager {
   readonly state: GameState;
   readonly mutateState: (newState: Partial<GameState>) => void;
 
@@ -48,7 +48,14 @@ export class FruitsSpawn {
   constructor(private game: any) {}
   spawn() {
     setInterval(() => {
-      this.game.fruits.add(Fruit.create(this.game.generateRandomCoordinates()));
+      this.game.fruits.add(
+        Fruit.create(
+          generateRandomCoordinates(
+            this.game.state.screen.width,
+            this.game.state.screen.height
+          )
+        )
+      );
       this.game.notify();
     }, 1000);
   }

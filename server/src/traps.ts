@@ -1,9 +1,9 @@
 import crypto from "crypto";
 
-import { Coordinates } from "./coordinate";
+import { Coordinates, generateRandomCoordinates } from "./coordinate";
 import { GameState } from "./game";
 
-export class Traps {
+export class TrapsManager {
   readonly state: GameState;
   readonly mutateState: (newState: Partial<GameState>) => void;
 
@@ -44,7 +44,14 @@ export class TrapsSpawn {
 
   spawn() {
     setInterval(() => {
-      this.game.traps.add(Trap.create(this.game.generateRandomCoordinates()));
+      this.game.traps.add(
+        Trap.create(
+          generateRandomCoordinates(
+            this.game.state.screen.width,
+            this.game.state.screen.height
+          )
+        )
+      );
       this.game.notify();
     }, 15000);
   }
